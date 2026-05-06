@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Parent Dashboard — Maluti Primary School</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="school_logo.png" alt="Logo">
+      <div class="sb-info">
+        <span class="sb-name" id="sbName">Parent</span>
+        <span class="sb-role">Parent / Guardian</span>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">My Children</div>
+      <a href="#" onclick="showTab('overview')" id="navOverview" class="active"><span class="si">👪</span> Overview</a>
+      <a href="#" onclick="showTab('grades')"   id="navGrades"><span class="si">📝</span> Grades</a>
+      <a href="#" onclick="showTab('attendance')" id="navAttend"><span class="si">📋</span> Attendance</a>
+      <a href="#" onclick="showTab('payments')"  id="navPayments"><span class="si">💰</span> Payments</a>
+    </nav>
+    <div class="sb-foot"><a href="#" onclick="Auth.logout()">🚪 Log Out</a></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Parent Dashboard</div>
+      <div class="topbar-user">
+        <div class="avatar gold" id="topAvatar">P</div>
+        <span id="topName">Parent</span>
+        &nbsp;|&nbsp;
+        <a href="#" onclick="Auth.logout()" style="color:var(--danger)">Logout</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- OVERVIEW -->
+      <div id="tab-overview">
+        <div class="page-hdr fade-up">
+          <h2 id="welcomeMsg">Hello!</h2>
+          <div class="breadcrumb">Parent Portal › Overview</div>
+        </div>
+        <div id="childrenCards"></div>
+      </div>
+
+      <!-- GRADES -->
+      <div id="tab-grades" class="hidden">
+        <div class="page-hdr"><h2>Children's Grades</h2><div class="breadcrumb">Parent Portal › Grades</div></div>
+        <div id="gradesContent"></div>
+      </div>
+
+      <!-- ATTENDANCE -->
+      <div id="tab-attendance" class="hidden">
+        <div class="page-hdr"><h2>Children's Attendance</h2><div class="breadcrumb">Parent Portal › Attendance</div></div>
+        <div id="attendContent"></div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div id="tab-payments" class="hidden">
+        <div class="page-hdr"><h2>Payment History</h2><div class="breadcrumb">Parent Portal › Payments</div></div>
+        <div id="paymentsContent"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+const session = Auth.requireRole('parent');
+let myId = null, myChildren = [];
+
+if(session){
+  myId = session.id;
+  document.getElementById('sbName').textContent    = session.name;
+  document.getElementById('topName').textContent   = session.name;
+  document.getElementById('topAvatar').textContent = initials(session.name);
+  document.getElementById('welcomeMsg').textContent = 'Hello, ' + session.name + '!';
+  myChildren = DB.users().filter(u => u.role === 'student' && u.parentId === myId);
+  renderOverview();
+}
+
+function showTab(name){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  const titles={overview:'Overview',grades:"Children's Grades",attendance:"Children's Attendance",payments:'Payments'};
+  document.getElementById('pageTitle').textContent=titles[name]||name;
+  if(name==='grades')    renderGrades();
+  if(name==='attendance') renderAttendance();
+  if(name==='payments')  renderPayments();
+}
+
+function renderOverview(){
+  if(!myChildren.length){
+    document.getElementById('childrenCards').innerHTML=`
+      <div class="card" style="text-align:center;padding:3rem;">
+        <div style="font-size:3rem;margin-bottom:1rem;">👶</div>
+        <h3>No children linked</h3>
+        <p class="text-muted">Your account has no student records linked. Please contact the school office.</p>
+      </div>`;
+    return;
+  }
+  document.getElementById('childrenCards').innerHTML = myChildren.map(child => {
+    const grades = DB.grades().filter(g=>g.studentId===child.id);
+    const att = DB.attendance().filter(a=>a.studentId===child.id);
+    const pays = DB.payments().filter(p=>p.studentId===child.id);
+    const present = att.filter(a=>a.status==='Present').length;
+    const absent  = att.filter(a=>a.status==='Absent').length;
+    const total   = pays.reduce((s,p)=>s+parseFloat(p.amount),0);
+    const classes = DB.classes();
+    const cls = classes.find(c=>c.id===child.classId);
+    return `
+    <div class="card fade-up" style="border-left:5px solid var(--gold);">
+      <div style="display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;margin-bottom:1.2rem;">
+        <div class="avatar gold" style="width:56px;height:56px;font-size:1.3rem;">${initials(child.name)}</div>
+        <div>
+          <h3 style="margin:0;">${child.name}</h3>
+          <span class="text-muted">${child.email} &nbsp;·&nbsp; ${cls?cls.name:'No class'}</span>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:1.5rem;flex-wrap:wrap;text-align:center;">
+          <div><div style="font-size:1.4rem;font-weight:800;color:var(--success);">${present}</div><div class="text-muted" style="font-size:.72rem;">Present</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:var(--danger);">${absent}</div><div class="text-muted" style="font-size:.72rem;">Absent</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:var(--navy);">${grades.length}</div><div class="text-muted" style="font-size:.72rem;">Grades</div></div>
+          <div><div style="font-size:1.4rem;font-weight:800;color:var(--gold);">M${total.toFixed(0)}</div><div class="text-muted" style="font-size:.72rem;">Paid</div></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-outline" onclick="showTab('grades')">📝 Grades</button>
+        <button class="btn btn-sm btn-outline" onclick="showTab('attendance')">📋 Attendance</button>
+        <button class="btn btn-sm btn-outline" onclick="showTab('payments')">💰 Payments</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGrades(){
+  document.getElementById('gradesContent').innerHTML = myChildren.map(child => {
+    const grades = DB.grades().filter(g=>g.studentId===child.id);
+    return `<div class="card">
+      <div class="card-header"><span class="card-title">📝 ${child.name}</span></div>
+      ${grades.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Subject</th><th>Grade</th><th>Date</th></tr></thead>
+        <tbody>${grades.map(g=>`<tr><td>${g.subject}</td><td><span class="badge badge-navy">${g.grade}</span></td><td>${g.date}</td></tr>`).join('')}</tbody>
+      </table></div>` : '<p class="text-muted" style="padding:.5rem 0;">No grade records.</p>'}
+    </div>`;
+  }).join('')||'<div class="card"><p class="text-muted">No children found.</p></div>';
+}
+
+function renderAttendance(){
+  document.getElementById('attendContent').innerHTML = myChildren.map(child => {
+    const att = DB.attendance().filter(a=>a.studentId===child.id);
+    const present=att.filter(a=>a.status==='Present').length;
+    const absent=att.filter(a=>a.status==='Absent').length;
+    const rate=att.length?Math.round(present/att.length*100):0;
+    return `<div class="card">
+      <div class="card-header"><span class="card-title">📋 ${child.name}</span>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <span class="badge badge-success">${present} Present</span>
+          <span class="badge badge-danger">${absent} Absent</span>
+          <span class="badge badge-navy">${rate}% rate</span>
+        </div>
+      </div>
+      ${att.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Status</th></tr></thead>
+        <tbody>${[...att].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>
+          `<tr><td>${a.date}</td><td><span class="badge ${a.status==='Present'?'badge-success':'badge-danger'}">${a.status}</span></td></tr>`
+        ).join('')}</tbody>
+      </table></div>` : '<p class="text-muted" style="padding:.5rem 0;">No attendance records.</p>'}
+    </div>`;
+  }).join('')||'<div class="card"><p class="text-muted">No children found.</p></div>';
+}
+
+function renderPayments(){
+  document.getElementById('paymentsContent').innerHTML = myChildren.map(child => {
+    const pays = DB.payments().filter(p=>p.studentId===child.id);
+    const total = pays.reduce((s,p)=>s+parseFloat(p.amount),0);
+    return `<div class="card">
+      <div class="card-header">
+        <span class="card-title">💰 ${child.name}</span>
+        <span class="badge badge-success" style="font-size:.85rem;">Total: M ${total.toFixed(2)}</span>
+      </div>
+      ${pays.length ? `<div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Note</th></tr></thead>
+        <tbody>${[...pays].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>
+          `<tr><td>${p.date}</td><td><strong>M ${parseFloat(p.amount).toFixed(2)}</strong></td><td><span class="badge badge-info">${p.method||'—'}</span></td><td>${p.note||'—'}</td></tr>`
+        ).join('')}</tbody>
+      </table></div>` : '<p class="text-muted" style="padding:.5rem 0;">No payment records.</p>'}
+    </div>`;
+  }).join('')||'<div class="card"><p class="text-muted">No children found.</p></div>';
+}
+</script>
+</body>
+</html>

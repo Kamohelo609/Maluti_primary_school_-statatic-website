@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Teacher Dashboard — Maluti Primary School</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="school_logo.png" alt="Logo">
+      <div class="sb-info">
+        <span class="sb-name" id="sbName">Teacher</span>
+        <span class="sb-role">Teacher</span>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">My Portal</div>
+      <a href="#" onclick="showTab('overview')" class="active" id="navOverview"><span class="si">📊</span> Overview</a>
+      <a href="#" onclick="showTab('grades')"   id="navGrades"><span class="si">📝</span> Grades</a>
+      <a href="#" onclick="showTab('attendance')" id="navAttend"><span class="si">📋</span> Attendance</a>
+      <a href="#" onclick="showTab('mystudents')" id="navMyStudents"><span class="si">🎓</span> My Students</a>
+    </nav>
+    <div class="sb-foot"><a href="#" onclick="Auth.logout()">🚪 Log Out</a></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-user">
+        <div class="avatar" id="topAvatar">T</div>
+        <span id="topName">Teacher</span>
+        &nbsp;|&nbsp;
+        <a href="#" onclick="Auth.logout()" style="color:var(--danger)">Logout</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- ═══ OVERVIEW ═══ -->
+      <div id="tab-overview">
+        <div class="page-hdr fade-up">
+          <h2 id="welcomeMsg">Welcome!</h2>
+          <div class="breadcrumb">Teacher Portal › Overview</div>
+        </div>
+        <div class="stat-cards" id="teacherStats"></div>
+        <div class="card fade-up">
+          <div class="card-header"><span class="card-title">📣 Quick Actions</span></div>
+          <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="showTab('grades')">📝 Enter Grade</button>
+            <button class="btn btn-gold"    onclick="showTab('attendance')">📋 Mark Attendance</button>
+            <button class="btn btn-outline" onclick="showTab('mystudents')">🎓 View Students</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ GRADES ═══ -->
+      <div id="tab-grades" class="hidden">
+        <div class="page-hdr"><h2>Grade Management</h2><div class="breadcrumb">Teacher Portal › Grades</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">➕ Add Grade</span></div>
+          <div class="form-row">
+            <div class="form-group"><label>Student *</label><select id="g_student" class="form-control"></select></div>
+            <div class="form-group"><label>Subject *</label><input id="g_subject" class="form-control" placeholder="e.g. Mathematics"></div>
+          </div>
+          <div class="form-group" style="max-width:200px;"><label>Grade / Mark *</label><input id="g_grade" class="form-control" placeholder="e.g. 85 or A+"></div>
+          <button class="btn btn-primary" onclick="addGrade()">✓ Submit Grade</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📋 Grade Records</span>
+            <input id="gradeSearch" class="form-control" style="width:200px;" placeholder="🔍 Search..." oninput="renderGradesTable()">
+          </div>
+          <div class="table-wrap"><table id="gradesTable">
+            <thead><tr><th>Student</th><th>Subject</th><th>Grade</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ ATTENDANCE ═══ -->
+      <div id="tab-attendance" class="hidden">
+        <div class="page-hdr"><h2>Attendance</h2><div class="breadcrumb">Teacher Portal › Attendance</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📋 Mark Attendance — <span id="todayDate"></span></span></div>
+          <div class="form-row">
+            <div class="form-group"><label>Student *</label><select id="a_student" class="form-control"></select></div>
+            <div class="form-group"><label>Date *</label><input id="a_date" type="date" class="form-control"></div>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <div style="display:flex;gap:1rem;margin-top:.3rem;">
+              <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:400;">
+                <input type="radio" name="a_status" value="Present" checked> ✅ Present
+              </label>
+              <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;font-weight:400;">
+                <input type="radio" name="a_status" value="Absent"> ❌ Absent
+              </label>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="markAttendance()">✓ Mark Attendance</button>
+        </div>
+
+        <!-- Bulk mark today -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">⚡ Bulk Mark for Today</span></div>
+          <div id="bulkTable"></div>
+          <button class="btn btn-gold" onclick="saveBulk()" style="margin-top:1rem;">💾 Save All</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">📅 Attendance Records</span>
+            <select id="attendFilter" class="form-control" style="width:180px;" onchange="renderAttendanceTable()">
+              <option value="">All Students</option>
+            </select>
+          </div>
+          <div class="table-wrap"><table id="attendTable">
+            <thead><tr><th>Date</th><th>Student</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ MY STUDENTS ═══ -->
+      <div id="tab-mystudents" class="hidden">
+        <div class="page-hdr"><h2>My Students</h2><div class="breadcrumb">Teacher Portal › Students</div></div>
+        <div class="card">
+          <div class="table-wrap"><table id="myStudentsTable">
+            <thead><tr><th>Name</th><th>Login ID</th><th>Email</th><th>Class</th><th>Grades</th><th>Attendance</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+const session = Auth.requireRole('teacher');
+let myId = null;
+
+if(session){
+  myId = session.id;
+  document.getElementById('sbName').textContent    = session.name;
+  document.getElementById('topName').textContent   = session.name;
+  document.getElementById('topAvatar').textContent = initials(session.name);
+  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + session.name + '!';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('a_date').value = today;
+  populateStudentSelects();
+  renderOverview();
+}
+
+function showTab(name){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  const navId = { overview:'navOverview', grades:'navGrades', attendance:'navAttend', mystudents:'navMyStudents' }[name];
+  if(navId) document.getElementById(navId).classList.add('active');
+  const titles={overview:'Dashboard',grades:'Grades',attendance:'Attendance',mystudents:'My Students'};
+  document.getElementById('pageTitle').textContent=titles[name]||name;
+  if(name==='grades')    renderGradesTable();
+  if(name==='attendance'){ renderAttendanceTable(); renderBulkTable(); populateAttendFilter(); }
+  if(name==='mystudents') renderMyStudents();
+}
+
+function populateStudentSelects(){
+  const students = DB.users().filter(u=>u.role==='student');
+  const opts = '<option value="">-- Select Student --</option>' + students.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  ['g_student','a_student'].forEach(id=>{ if(document.getElementById(id)) document.getElementById(id).innerHTML=opts; });
+}
+
+function renderOverview(){
+  const users=DB.users(), grades=DB.grades(), attend=DB.attendance();
+  const today=new Date().toISOString().split('T')[0];
+  const stats=[
+    {label:'Total Students',value:users.filter(u=>u.role==='student').length,icon:'🎓',cls:''},
+    {label:'Grade Records',value:grades.length,icon:'📝',cls:'gold'},
+    {label:'Marked Today',value:attend.filter(a=>a.date===today).length,icon:'📋',cls:'success'},
+  ];
+  document.getElementById('teacherStats').innerHTML=stats.map(s=>`
+    <div class="stat-card ${s.cls}"><div class="sc-icon">${s.icon}</div><div class="sc-info"><h3>${s.value}</h3><p>${s.label}</p></div></div>
+  `).join('');
+}
+
+// ── Grades ─────────────────────────────────────────────────────
+function addGrade(){
+  const studentId=parseInt(document.getElementById('g_student').value);
+  const subject=document.getElementById('g_subject').value.trim();
+  const grade=document.getElementById('g_grade').value.trim();
+  if(!studentId||!subject||!grade){toast('Fill all fields.','danger');return;}
+  const grades=DB.grades();
+  grades.push({id:nextId(grades),studentId,subject,grade,date:new Date().toISOString().split('T')[0]});
+  DB.saveGrades(grades);
+  document.getElementById('g_subject').value='';document.getElementById('g_grade').value='';
+  toast('Grade added!');renderGradesTable();renderOverview();
+}
+
+function renderGradesTable(){
+  const q=(document.getElementById('gradeSearch')?.value||'').toLowerCase();
+  const grades=DB.grades(),users=DB.users();
+  const filtered=grades.filter(g=>{const s=users.find(u=>u.id===g.studentId);return !q||(s&&s.name.toLowerCase().includes(q))||g.subject.toLowerCase().includes(q);});
+  document.querySelector('#gradesTable tbody').innerHTML=[...filtered].reverse().map(g=>{
+    const s=users.find(u=>u.id===g.studentId);
+    return `<tr>
+      <td>${s?s.name:'?'}</td><td>${g.subject}</td>
+      <td><input class="form-control" style="width:80px;" value="${g.grade}" id="ge_${g.id}" onchange="updateGrade(${g.id},this.value)"></td>
+      <td>${g.date}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteGrade(${g.id})">🗑</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--ink-soft);">No grades yet</td></tr>';
+}
+
+function updateGrade(id,val){
+  const grades=DB.grades();
+  const g=grades.find(x=>x.id===id);if(g){g.grade=val;DB.saveGrades(grades);toast('Grade updated!');}
+}
+
+async function deleteGrade(id){
+  const ok=await confirm2('Delete this grade?');if(!ok)return;
+  DB.saveGrades(DB.grades().filter(g=>g.id!==id));toast('Deleted.');renderGradesTable();renderOverview();
+}
+
+// ── Attendance ─────────────────────────────────────────────────
+function markAttendance(){
+  const studentId=parseInt(document.getElementById('a_student').value);
+  const date=document.getElementById('a_date').value;
+  const status=document.querySelector('input[name="a_status"]:checked')?.value||'Present';
+  if(!studentId||!date){toast('Select student and date.','danger');return;}
+  const att=DB.attendance();
+  const existing=att.find(a=>a.studentId===studentId&&a.date===date);
+  if(existing){existing.status=status;}else{att.push({id:nextId(att),studentId,date,status});}
+  DB.saveAttendance(att);
+  toast('Attendance marked!');renderAttendanceTable();renderOverview();
+}
+
+function renderBulkTable(){
+  const students=DB.users().filter(u=>u.role==='student');
+  const today=new Date().toISOString().split('T')[0];
+  const att=DB.attendance();
+  document.getElementById('bulkTable').innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Status</th></tr></thead>
+    <tbody>${students.map(s=>{
+      const existing=att.find(a=>a.studentId===s.id&&a.date===today);
+      return `<tr>
+        <td>${s.name}</td>
+        <td>
+          <label style="margin-right:.8rem;cursor:pointer;font-weight:400;">
+            <input type="radio" name="bulk_${s.id}" value="Present" ${!existing||existing.status==='Present'?'checked':''}> ✅ Present
+          </label>
+          <label style="cursor:pointer;font-weight:400;">
+            <input type="radio" name="bulk_${s.id}" value="Absent" ${existing&&existing.status==='Absent'?'checked':''}> ❌ Absent
+          </label>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody></table></div>`;
+}
+
+function saveBulk(){
+  const students=DB.users().filter(u=>u.role==='student');
+  const today=new Date().toISOString().split('T')[0];
+  const att=DB.attendance();
+  students.forEach(s=>{
+    const status=document.querySelector(`input[name="bulk_${s.id}"]:checked`)?.value||'Present';
+    const existing=att.find(a=>a.studentId===s.id&&a.date===today);
+    if(existing){existing.status=status;}else{att.push({id:nextId(att),studentId:s.id,date:today,status});}
+  });
+  DB.saveAttendance(att);
+  toast('All attendance saved!');renderAttendanceTable();renderOverview();
+}
+
+function populateAttendFilter(){
+  const students=DB.users().filter(u=>u.role==='student');
+  document.getElementById('attendFilter').innerHTML='<option value="">All Students</option>'+students.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function renderAttendanceTable(){
+  const filterVal=document.getElementById('attendFilter')?.value;
+  const att=DB.attendance(),users=DB.users();
+  const filtered=filterVal?att.filter(a=>a.studentId===parseInt(filterVal)):att;
+  document.querySelector('#attendTable tbody').innerHTML=[...filtered].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>{
+    const s=users.find(u=>u.id===a.studentId);
+    return `<tr>
+      <td>${a.date}</td><td>${s?s.name:'?'}</td>
+      <td><span class="badge ${a.status==='Present'?'badge-success':'badge-danger'}">${a.status}</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteAttend(${a.id})">🗑</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--ink-soft);">No records</td></tr>';
+}
+
+async function deleteAttend(id){
+  const ok=await confirm2('Delete this attendance record?');if(!ok)return;
+  DB.saveAttendance(DB.attendance().filter(a=>a.id!==id));toast('Deleted.');renderAttendanceTable();
+}
+
+// ── My Students ────────────────────────────────────────────────
+function renderMyStudents(){
+  const users=DB.users(),grades=DB.grades(),att=DB.attendance(),classes=DB.classes();
+  const students=users.filter(u=>u.role==='student');
+  document.querySelector('#myStudentsTable tbody').innerHTML=students.map(s=>{
+    const cls=classes.find(c=>c.id===s.classId);
+    const sGrades=grades.filter(g=>g.studentId===s.id);
+    const present=att.filter(a=>a.studentId===s.id&&a.status==='Present').length;
+    const absent=att.filter(a=>a.studentId===s.id&&a.status==='Absent').length;
+    return `<tr>
+      <td>${s.name}</td><td>${s.loginID}</td><td>${s.email}</td>
+      <td>${cls?cls.name:'—'}</td>
+      <td>${sGrades.map(g=>`<span class="badge badge-navy">${g.subject}:${g.grade}</span>`).join(' ')||'—'}</td>
+      <td><span class="badge badge-success">${present}P</span> <span class="badge badge-danger">${absent}A</span></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="6" style="text-align:center;padding:1rem;">No students</td></tr>';
+}
+</script>
+</body>
+</html>

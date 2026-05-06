@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Dashboard — Maluti Primary School</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="school_logo.png" alt="Logo">
+      <div class="sb-info">
+        <span class="sb-name" id="sbName">Admin</span>
+        <span class="sb-role">Administrator</span>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Main</div>
+      <a href="admin.html" class="active"><span class="si">🏠</span> Dashboard</a>
+      <div class="sb-section">Management</div>
+      <a href="#" onclick="showSection('users')"><span class="si">👥</span> Manage Users</a>
+      <a href="#" onclick="showSection('students')"><span class="si">🎓</span> Students</a>
+      <a href="#" onclick="showSection('teachers')"><span class="si">👩‍🏫</span> Teachers</a>
+      <a href="#" onclick="showSection('classes')"><span class="si">📚</span> Classes</a>
+      <a href="#" onclick="showSection('payments')"><span class="si">💰</span> Finances</a>
+      <a href="#" onclick="showSection('grades')"><span class="si">📝</span> All Grades</a>
+    </nav>
+    <div class="sb-foot">
+      <a href="#" onclick="Auth.logout()">🚪 Log Out</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-user">
+        <div class="avatar gold" id="topAvatar">A</div>
+        <span id="topName">Admin</span>
+        &nbsp;|&nbsp;
+        <a href="#" onclick="Auth.logout()" style="color:var(--danger)">Logout</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- ═══ OVERVIEW ═══ -->
+      <div id="sec-overview">
+        <div class="page-hdr fade-up">
+          <h2 id="welcomeMsg">Welcome!</h2>
+          <div class="breadcrumb">Dashboard › Overview</div>
+        </div>
+        <div class="stat-cards" id="statCards"></div>
+        <div class="card fade-up">
+          <div class="card-header"><span class="card-title">⚡ Quick Actions</span></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.8rem;">
+            <button class="btn btn-primary" onclick="showSection('users')">➕ Add User</button>
+            <button class="btn btn-gold" onclick="showSection('students')">🎓 Students</button>
+            <button class="btn btn-outline" onclick="showSection('teachers')">👩‍🏫 Teachers</button>
+            <button class="btn btn-outline" onclick="showSection('classes')">📚 Classes</button>
+            <button class="btn btn-success" onclick="showSection('payments')">💰 Finances</button>
+          </div>
+        </div>
+        <div class="card fade-up">
+          <div class="card-header"><span class="card-title">👥 Recent Users</span><button class="btn btn-sm btn-outline" onclick="showSection('users')">View All</button></div>
+          <div class="table-wrap"><table id="recentUsersTable">
+            <thead><tr><th>Login ID</th><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ USERS ═══ -->
+      <div id="sec-users" class="hidden">
+        <div class="page-hdr"><h2>Manage Users</h2><div class="breadcrumb">Dashboard › Users</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">➕ Add New User</span></div>
+          <div class="form-row">
+            <div class="form-group"><label>Login ID *</label><input id="u_loginID" class="form-control" placeholder="e.g. 10023"></div>
+            <div class="form-group"><label>Full Name *</label><input id="u_name" class="form-control" placeholder="Full name"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Password *</label><input id="u_pw" type="password" class="form-control" placeholder="Password"></div>
+            <div class="form-group"><label>Email *</label><input id="u_email" type="email" class="form-control" placeholder="email@example.com"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Role *</label>
+              <select id="u_role" class="form-control">
+                <option value="">-- Select --</option>
+                <option value="admin">Admin</option>
+                <option value="teacher">Teacher</option>
+                <option value="student">Student</option>
+                <option value="parent">Parent</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Gender</label>
+              <select id="u_gender" class="form-control">
+                <option>Male</option><option>Female</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Date of Birth</label><input id="u_dob" type="date" class="form-control"></div>
+            <div class="form-group"><label>Parent ID <small>(students only)</small></label><input id="u_parentId" type="number" class="form-control" placeholder="Leave blank if not student"></div>
+          </div>
+          <button class="btn btn-primary" onclick="addUser()">➕ Register User</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">All Users</span>
+            <input id="userSearch" class="form-control" style="width:220px;" placeholder="🔍 Search..." oninput="renderUsersTable()">
+          </div>
+          <div class="table-wrap"><table id="usersTable">
+            <thead><tr><th>Login ID</th><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ STUDENTS ═══ -->
+      <div id="sec-students" class="hidden">
+        <div class="page-hdr"><h2>Students</h2><div class="breadcrumb">Dashboard › Students</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🎓 All Students</span>
+            <button class="btn btn-primary btn-sm" onclick="showSection('users')">➕ Add Student</button>
+          </div>
+          <div class="table-wrap"><table id="studentsTable">
+            <thead><tr><th>Login ID</th><th>Name</th><th>DOB</th><th>Class</th><th>Parent</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ TEACHERS ═══ -->
+      <div id="sec-teachers" class="hidden">
+        <div class="page-hdr"><h2>Teachers</h2><div class="breadcrumb">Dashboard › Teachers</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">👩‍🏫 All Teachers</span>
+            <button class="btn btn-primary btn-sm" onclick="showSection('users')">➕ Add Teacher</button>
+          </div>
+          <div class="table-wrap"><table id="teachersTable">
+            <thead><tr><th>Login ID</th><th>Name</th><th>Email</th><th>Gender</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ CLASSES ═══ -->
+      <div id="sec-classes" class="hidden">
+        <div class="page-hdr"><h2>Classes</h2><div class="breadcrumb">Dashboard › Classes</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">➕ Add Class</span></div>
+          <div class="form-row">
+            <div class="form-group"><label>Class Name *</label><input id="c_name" class="form-control" placeholder="e.g. Grade 4A"></div>
+            <div class="form-group"><label>Teacher *</label><select id="c_teacher" class="form-control"></select></div>
+          </div>
+          <button class="btn btn-primary" onclick="addClass()">➕ Add Class</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📚 All Classes</span></div>
+          <div class="table-wrap"><table id="classesTable">
+            <thead><tr><th>ID</th><th>Class Name</th><th>Teacher</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ PAYMENTS ═══ -->
+      <div id="sec-payments" class="hidden">
+        <div class="page-hdr"><h2>Finances</h2><div class="breadcrumb">Dashboard › Finances</div></div>
+        <div class="stat-cards" style="max-width:380px;">
+          <div class="stat-card success">
+            <div class="sc-icon">💵</div>
+            <div class="sc-info"><h3 id="totalCollected">M 0.00</h3><p>Total Collected</p></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">➕ Record Payment</span></div>
+          <div class="form-row">
+            <div class="form-group"><label>Student *</label><select id="p_student" class="form-control"></select></div>
+            <div class="form-group"><label>Amount (M) *</label><input id="p_amount" type="number" step="0.01" class="form-control" placeholder="0.00"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>Date *</label><input id="p_date" type="date" class="form-control"></div>
+            <div class="form-group"><label>Method</label>
+              <select id="p_method" class="form-control">
+                <option>Cash</option><option>Card</option><option>Bank Transfer</option><option>Mobile Money</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Note</label><input id="p_note" class="form-control" placeholder="e.g. Term 1 fees"></div>
+          <button class="btn btn-success" onclick="addPayment()">💰 Record Payment</button>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📋 Payment History</span></div>
+          <div class="table-wrap"><table id="paymentsTable">
+            <thead><tr><th>Student</th><th>Amount</th><th>Date</th><th>Method</th><th>Note</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ═══ GRADES ═══ -->
+      <div id="sec-grades" class="hidden">
+        <div class="page-hdr"><h2>All Grades</h2><div class="breadcrumb">Dashboard › Grades</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📝 Grade Records</span></div>
+          <div class="table-wrap"><table id="allGradesTable">
+            <thead><tr><th>Student</th><th>Subject</th><th>Grade</th><th>Date</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div><!-- /page-body -->
+  </div><!-- /main -->
+</div>
+
+<script src="app.js"></script>
+<script>
+const session = Auth.requireRole('admin');
+if(session){
+  document.getElementById('sbName').textContent    = session.name;
+  document.getElementById('topName').textContent   = session.name;
+  document.getElementById('topAvatar').textContent = initials(session.name);
+  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + session.name + '!';
+  renderOverview();
+}
+
+function showSection(name){
+  document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById('sec-' + name).classList.remove('hidden');
+  const titles = {overview:'Dashboard',users:'Manage Users',students:'Students',teachers:'Teachers',classes:'Classes',payments:'Finances',grades:'All Grades'};
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+
+  // re-render on show
+  if(name==='overview')  renderOverview();
+  if(name==='users')     { renderUsersTable(); }
+  if(name==='students')  renderStudentsTable();
+  if(name==='teachers')  renderTeachersTable();
+  if(name==='classes')   { renderClassesTable(); populateTeacherSelect(); }
+  if(name==='payments')  { renderPaymentsTable(); populateStudentSelects(); updateTotal(); }
+  if(name==='grades')    renderAllGrades();
+}
+
+// ── Overview ─────────────────────────────────────────────────
+function renderOverview(){
+  const users = DB.users();
+  const stats = [
+    { label:'Students', value: users.filter(u=>u.role==='student').length, icon:'🎓', cls:'' },
+    { label:'Teachers', value: users.filter(u=>u.role==='teacher').length, icon:'👩‍🏫', cls:'gold' },
+    { label:'Parents',  value: users.filter(u=>u.role==='parent').length,  icon:'👪',  cls:'success' },
+    { label:'Total Payments', value:'M '+DB.payments().reduce((s,p)=>s+p.amount,0).toFixed(2), icon:'💵', cls:'danger' },
+  ];
+  document.getElementById('statCards').innerHTML = stats.map(s=>`
+    <div class="stat-card ${s.cls}">
+      <div class="sc-icon">${s.icon}</div>
+      <div class="sc-info"><h3>${s.value}</h3><p>${s.label}</p></div>
+    </div>`).join('');
+
+  const tbody = document.querySelector('#recentUsersTable tbody');
+  const roleBadge = r => ({admin:'badge-navy',teacher:'badge-info',student:'badge-success',parent:'badge-gold'}[r]||'badge-navy');
+  tbody.innerHTML = [...users].reverse().slice(0,8).map(u=>`
+    <tr>
+      <td>${u.loginID}</td>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${roleBadge(u.role)}">${u.role}</span></td>
+    </tr>`).join('');
+}
+
+// ── Users ─────────────────────────────────────────────────────
+function renderUsersTable(){
+  const q = (document.getElementById('userSearch')?.value||'').toLowerCase();
+  const users = DB.users().filter(u=> !q || u.name.toLowerCase().includes(q) || u.loginID.includes(q) || u.role.includes(q));
+  const roleBadge = r => ({admin:'badge-navy',teacher:'badge-info',student:'badge-success',parent:'badge-gold'}[r]||'badge-navy');
+  document.querySelector('#usersTable tbody').innerHTML = users.map(u=>`
+    <tr>
+      <td>${u.loginID}</td>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td><span class="badge ${roleBadge(u.role)}">${u.role}</span></td>
+      <td>
+        <button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">🗑 Delete</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--ink-soft);padding:1.5rem;">No users found</td></tr>';
+}
+
+function addUser(){
+  const loginID = document.getElementById('u_loginID').value.trim();
+  const name    = document.getElementById('u_name').value.trim();
+  const pw      = document.getElementById('u_pw').value.trim();
+  const email   = document.getElementById('u_email').value.trim();
+  const role    = document.getElementById('u_role').value;
+  const gender  = document.getElementById('u_gender').value;
+  const dob     = document.getElementById('u_dob').value;
+  const parentId= parseInt(document.getElementById('u_parentId').value)||null;
+
+  if(!loginID||!name||!pw||!email||!role){ toast('Please fill all required fields.','danger'); return; }
+  const users = DB.users();
+  if(users.find(u=>u.loginID===loginID)){ toast('Login ID already exists.','danger'); return; }
+
+  users.push({ id:nextId(users), loginID, name, password:pw, email, gender, dob, role, parentId, classId:null });
+  DB.saveUsers(users);
+  toast('User registered successfully!');
+  ['u_loginID','u_name','u_pw','u_email','u_dob','u_parentId'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('u_role').value='';
+  renderUsersTable();
+}
+
+async function deleteUser(id){
+  const ok = await confirm2('Delete this user? This cannot be undone.');
+  if(!ok) return;
+  DB.saveUsers(DB.users().filter(u=>u.id!==id));
+  toast('User deleted.');
+  renderUsersTable(); renderOverview();
+}
+
+// ── Students ───────────────────────────────────────────────────
+function renderStudentsTable(){
+  const users = DB.users(), classes = DB.classes();
+  const students = users.filter(u=>u.role==='student');
+  document.querySelector('#studentsTable tbody').innerHTML = students.map(s=>{
+    const cls = classes.find(c=>c.id===s.classId);
+    const par = users.find(u=>u.id===s.parentId);
+    return `<tr>
+      <td>${s.loginID}</td><td>${s.name}</td><td>${s.dob||'—'}</td>
+      <td>${cls?cls.name:'—'}</td><td>${par?par.name:'—'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--ink-soft);">No students</td></tr>';
+}
+
+// ── Teachers ───────────────────────────────────────────────────
+function renderTeachersTable(){
+  const teachers = DB.users().filter(u=>u.role==='teacher');
+  document.querySelector('#teachersTable tbody').innerHTML = teachers.map(t=>`
+    <tr><td>${t.loginID}</td><td>${t.name}</td><td>${t.email}</td><td>${t.gender}</td></tr>
+  `).join('') || '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--ink-soft);">No teachers</td></tr>';
+}
+
+// ── Classes ────────────────────────────────────────────────────
+function populateTeacherSelect(){
+  const teachers = DB.users().filter(u=>u.role==='teacher');
+  document.getElementById('c_teacher').innerHTML = '<option value="">-- Select Teacher --</option>' + teachers.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+}
+
+function addClass(){
+  const name = document.getElementById('c_name').value.trim();
+  const teacherId = parseInt(document.getElementById('c_teacher').value)||null;
+  if(!name||!teacherId){ toast('Please fill class name and teacher.','danger'); return; }
+  const classes = DB.classes();
+  classes.push({ id:nextId(classes), name, teacherId });
+  DB.saveClasses(classes);
+  document.getElementById('c_name').value='';
+  toast('Class added!');
+  renderClassesTable();
+}
+
+function renderClassesTable(){
+  const classes = DB.classes(), users = DB.users();
+  document.querySelector('#classesTable tbody').innerHTML = classes.map(c=>{
+    const t = users.find(u=>u.id===c.teacherId);
+    return `<tr>
+      <td>${c.id}</td><td>${c.name}</td><td>${t?t.name:'—'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteClass(${c.id})">🗑</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--ink-soft);">No classes</td></tr>';
+}
+
+async function deleteClass(id){
+  const ok = await confirm2('Delete this class?');
+  if(!ok) return;
+  DB.saveClasses(DB.classes().filter(c=>c.id!==id));
+  toast('Class deleted.'); renderClassesTable();
+}
+
+// ── Payments ───────────────────────────────────────────────────
+function populateStudentSelects(){
+  const students = DB.users().filter(u=>u.role==='student');
+  const opts = '<option value="">-- Select Student --</option>' + students.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  document.getElementById('p_student').innerHTML = opts;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('p_date').value = today;
+}
+
+function addPayment(){
+  const studentId = parseInt(document.getElementById('p_student').value);
+  const amount    = parseFloat(document.getElementById('p_amount').value);
+  const date      = document.getElementById('p_date').value;
+  const method    = document.getElementById('p_method').value;
+  const note      = document.getElementById('p_note').value.trim();
+  if(!studentId||!amount||!date){ toast('Please fill required fields.','danger'); return; }
+  const payments = DB.payments();
+  payments.push({ id:nextId(payments), studentId, amount, date, method, note });
+  DB.savePayments(payments);
+  ['p_amount','p_note'].forEach(id=>document.getElementById(id).value='');
+  toast('Payment recorded!');
+  renderPaymentsTable(); updateTotal();
+}
+
+function renderPaymentsTable(){
+  const payments = DB.payments(), users = DB.users();
+  document.querySelector('#paymentsTable tbody').innerHTML = [...payments].reverse().map(p=>{
+    const s = users.find(u=>u.id===p.studentId);
+    return `<tr>
+      <td>${s?s.name:'Unknown'}</td>
+      <td><strong>M ${parseFloat(p.amount).toFixed(2)}</strong></td>
+      <td>${p.date}</td>
+      <td><span class="badge badge-info">${p.method||'—'}</span></td>
+      <td>${p.note||'—'}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="deletePayment(${p.id})">🗑</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;padding:1rem;color:var(--ink-soft);">No payments</td></tr>';
+}
+
+function updateTotal(){
+  const total = DB.payments().reduce((s,p)=>s+parseFloat(p.amount),0);
+  document.getElementById('totalCollected').textContent = 'M ' + total.toFixed(2);
+}
+
+async function deletePayment(id){
+  const ok = await confirm2('Delete this payment?');
+  if(!ok) return;
+  DB.savePayments(DB.payments().filter(p=>p.id!==id));
+  toast('Payment deleted.'); renderPaymentsTable(); updateTotal();
+}
+
+// ── All Grades ─────────────────────────────────────────────────
+function renderAllGrades(){
+  const grades = DB.grades(), users = DB.users();
+  document.querySelector('#allGradesTable tbody').innerHTML = grades.map(g=>{
+    const s = users.find(u=>u.id===g.studentId);
+    return `<tr><td>${s?s.name:'Unknown'}</td><td>${g.subject}</td><td><span class="badge badge-navy">${g.grade}</span></td><td>${g.date}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" style="text-align:center;padding:1rem;color:var(--ink-soft);">No grades</td></tr>';
+}
+</script>
+</body>
+</html>

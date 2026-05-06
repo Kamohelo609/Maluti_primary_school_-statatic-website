@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>About Us — Maluti Primary School</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .about-hero{background:linear-gradient(135deg,var(--navy),var(--navy-light));padding:4rem 2.5rem;text-align:center;color:#fff;}
+    .about-hero h1{font-size:2.5rem;color:#fff;margin-bottom:.6rem;}
+    .about-hero p{color:rgba(255,255,255,.78);max-width:560px;margin:0 auto;font-size:1.05rem;}
+    .about-body{max-width:1140px;margin:0 auto;padding:3.5rem 2rem;}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;margin-bottom:3.5rem;}
+    .split img{border-radius:var(--radius-xl);box-shadow:var(--shadow-lg);}
+    .split h2{margin-bottom:.8rem;}
+    .split p{color:var(--ink-mid);line-height:1.8;margin-bottom:.9rem;}
+    .values-sec{background:var(--navy);padding:4rem 2rem;}
+    .values-sec h2{text-align:center;color:#fff;margin-bottom:2rem;}
+    .values-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:1.1rem;max-width:1140px;margin:0 auto;}
+    .value-card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;color:#fff;}
+    .value-card .vi{font-size:2rem;margin-bottom:.7rem;}
+    .value-card h4{color:#fff;margin-bottom:.4rem;}
+    .value-card p{color:rgba(255,255,255,.65);font-size:.85rem;}
+    @media(max-width:700px){.split{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="ticker"><span class="ticker-tag">📢 NEWS</span><marquee>Welcome to Maluti Primary School — Nurturing Minds, Shaping Futures!</marquee></div>
+<nav class="pub-nav">
+  <div class="pub-nav-brand"><img src="school_logo.png" alt="Logo"><span>Maluti Primary School</span></div>
+  <ul class="pub-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="login.html">Login</a></li>
+    <li><a href="about.html" class="active">About Us</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="about-hero">
+  <h1>About Maluti Primary School</h1>
+  <p>Where learning meets inspiration, and every child is empowered to reach their full potential.</p>
+</div>
+
+<div class="about-body">
+  <div class="split fade-up">
+    <div>
+      <h2>Our Story</h2>
+      <p>Maluti Primary School was founded with one vision: to deliver quality education to every child in our community. Since our establishment, we have grown into a thriving institution with hundreds of students, dedicated educators, and a proud tradition of academic excellence.</p>
+      <p>Located in Maseru, Lesotho, we serve learners from Grade 1 through Grade 7. We believe the foundation of a great life is built in the primary years.</p>
+      <a href="contact.html" class="btn btn-primary btn-lg" style="margin-top:.5rem;">Contact Us →</a>
+    </div>
+    <img src="school_building.png" alt="School">
+  </div>
+  <div class="split fade-up">
+    <img src="school_logo.png" alt="Logo" style="max-width:300px;margin:0 auto;">
+    <div>
+      <h2>Our Mission</h2>
+      <p>To nurture intellectually curious, morally upright, and socially responsible citizens through a holistic and inclusive education system.</p>
+      <h2 style="margin-top:1.5rem;">Our Vision</h2>
+      <p>To be a leading primary school in Lesotho — recognised for academic excellence, innovative teaching, and the holistic development of every learner.</p>
+    </div>
+  </div>
+</div>
+
+<section class="values-sec">
+  <h2>Our Core Values</h2>
+  <div class="values-grid">
+    <div class="value-card"><div class="vi">🎓</div><h4>Excellence</h4><p>We hold ourselves to the highest academic and behavioural standards.</p></div>
+    <div class="value-card"><div class="vi">🤝</div><h4>Integrity</h4><p>Honesty, respect and responsibility are at the heart of our school culture.</p></div>
+    <div class="value-card"><div class="vi">💡</div><h4>Innovation</h4><p>We embrace modern teaching methods to prepare learners for the future.</p></div>
+    <div class="value-card"><div class="vi">🌍</div><h4>Community</h4><p>We are deeply rooted in our community and committed to its growth.</p></div>
+    <div class="value-card"><div class="vi">❤️</div><h4>Inclusion</h4><p>Every child, regardless of background, is valued and belongs here.</p></div>
+  </div>
+</section>
+
+<footer class="footer"><p>&copy; 2025 <strong>Maluti Primary School</strong>. All Rights Reserved. | Maseru, Lesotho</p></footer>
+</body>
+</html>

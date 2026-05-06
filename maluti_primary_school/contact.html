@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Contact — Maluti Primary School</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .c-hero{background:linear-gradient(135deg,var(--navy),var(--navy-light));padding:3.5rem 2.5rem;text-align:center;color:#fff;}
+    .c-hero h1{font-size:2.3rem;color:#fff;margin-bottom:.5rem;}
+    .c-hero p{color:rgba(255,255,255,.78);max-width:500px;margin:0 auto;}
+    .c-body{max-width:1100px;margin:0 auto;padding:3rem 2rem;display:grid;grid-template-columns:1fr 1.5fr;gap:2.5rem;}
+    .info-item{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.4rem;}
+    .info-ico{width:44px;height:44px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;flex-shrink:0;}
+    .info-item strong{display:block;margin-bottom:.2rem;}
+    .info-item span{color:var(--ink-soft);font-size:.88rem;line-height:1.5;}
+    .sent-overlay{display:none;text-align:center;padding:2rem;}
+    @media(max-width:720px){.c-body{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="ticker"><span class="ticker-tag">📢</span><marquee>We'd love to hear from you — Contact Maluti Primary School!</marquee></div>
+<nav class="pub-nav">
+  <div class="pub-nav-brand"><img src="school_logo.png" alt="Logo"><span>Maluti Primary School</span></div>
+  <ul class="pub-nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="login.html">Login</a></li>
+    <li><a href="about.html">About Us</a></li>
+    <li><a href="contact.html" class="active">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="c-hero"><h1>Get In Touch</h1><p>Have a question or want to enrol your child? We're here to help.</p></div>
+
+<div class="c-body">
+  <!-- Info -->
+  <div>
+    <h3 style="margin-bottom:1.5rem;">Contact Information</h3>
+    <div class="info-item"><div class="info-ico">📍</div><div><strong>Address</strong><span>123 School Road, Maseru, Lesotho</span></div></div>
+    <div class="info-item"><div class="info-ico">📞</div><div><strong>Phone</strong><span>+266 2233 4455</span></div></div>
+    <div class="info-item"><div class="info-ico">✉️</div><div><strong>Email</strong><span>info@malutiprimary.co.ls</span></div></div>
+    <div class="info-item"><div class="info-ico">🕐</div><div><strong>Office Hours</strong><span>Mon–Fri: 07:30–16:00<br>Saturday: 08:00–12:00</span></div></div>
+    <div style="margin-top:1.5rem;">
+      <h4 style="margin-bottom:.8rem;">Follow Us</h4>
+      <div style="display:flex;gap:.6rem;">
+        <a href="#" style="width:38px;height:38px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">f</a>
+        <a href="#" style="width:38px;height:38px;background:#1da1f2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">t</a>
+        <a href="#" style="width:38px;height:38px;background:#25d366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;">w</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="card">
+    <h3 style="margin-bottom:.3rem;">Send a Message</h3>
+    <p class="text-muted mb-2">We'll respond within 1–2 business days.</p>
+    <div id="formArea">
+      <div id="formSuccess" class="alert alert-success hidden">✓ Thank you! Your message has been sent successfully.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Full Name *</label><input id="c_name" class="form-control" placeholder="Your name"></div>
+        <div class="form-group"><label>Email *</label><input id="c_email" type="email" class="form-control" placeholder="email@example.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone</label><input id="c_phone" class="form-control" placeholder="+266..."></div>
+        <div class="form-group"><label>Subject *</label><input id="c_subject" class="form-control" placeholder="e.g. Enrolment inquiry"></div>
+      </div>
+      <div class="form-group"><label>Message *</label><textarea id="c_message" class="form-control" rows="5" placeholder="Write your message here..." style="resize:vertical;"></textarea></div>
+      <button class="btn btn-primary btn-full btn-lg" onclick="sendMessage()">Send Message →</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer"><p>&copy; 2025 <strong>Maluti Primary School</strong>. All Rights Reserved. | Maseru, Lesotho</p></footer>
+
+<script>
+function sendMessage(){
+  const name=document.getElementById('c_name').value.trim();
+  const email=document.getElementById('c_email').value.trim();
+  const subject=document.getElementById('c_subject').value.trim();
+  const msg=document.getElementById('c_message').value.trim();
+  if(!name||!email||!subject||!msg){ alert('Please fill all required fields.'); return; }
+  document.getElementById('formSuccess').classList.remove('hidden');
+  ['c_name','c_email','c_phone','c_subject','c_message'].forEach(id=>document.getElementById(id).value='');
+  document.querySelector('button').disabled=true;
+  document.querySelector('button').textContent='Sent ✓';
+}
+</script>
+</body>
+</html>

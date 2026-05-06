@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Student Dashboard — Maluti Primary School</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <img src="school_logo.png" alt="Logo">
+      <div class="sb-info">
+        <span class="sb-name" id="sbName">Student</span>
+        <span class="sb-role">Student</span>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">My Portal</div>
+      <a href="#" onclick="showTab('overview')" id="navOverview" class="active"><span class="si">📊</span> Overview</a>
+      <a href="#" onclick="showTab('grades')"   id="navGrades"><span class="si">📝</span> My Grades</a>
+      <a href="#" onclick="showTab('attendance')" id="navAttend"><span class="si">📋</span> Attendance</a>
+      <a href="#" onclick="showTab('payments')"  id="navPayments"><span class="si">💰</span> Payments</a>
+    </nav>
+    <div class="sb-foot"><a href="#" onclick="Auth.logout()">🚪 Log Out</a></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">My Dashboard</div>
+      <div class="topbar-user">
+        <div class="avatar" id="topAvatar">S</div>
+        <span id="topName">Student</span>
+        &nbsp;|&nbsp;
+        <a href="#" onclick="Auth.logout()" style="color:var(--danger)">Logout</a>
+      </div>
+    </div>
+
+    <div class="page-body">
+
+      <!-- OVERVIEW -->
+      <div id="tab-overview">
+        <div class="page-hdr fade-up">
+          <h2 id="welcomeMsg">Welcome!</h2>
+          <div class="breadcrumb">Student Portal › Overview</div>
+        </div>
+        <div class="stat-cards" id="myStats"></div>
+        <div class="card fade-up">
+          <div class="card-header"><span class="card-title">📝 Recent Grades</span><button class="btn btn-sm btn-outline" onclick="showTab('grades')">View All</button></div>
+          <div class="table-wrap"><table id="recentGradesTable">
+            <thead><tr><th>Subject</th><th>Grade</th><th>Date</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+        <div class="card fade-up-2">
+          <div class="card-header"><span class="card-title">📅 Recent Attendance</span><button class="btn btn-sm btn-outline" onclick="showTab('attendance')">View All</button></div>
+          <div class="table-wrap"><table id="recentAttendTable">
+            <thead><tr><th>Date</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- GRADES -->
+      <div id="tab-grades" class="hidden">
+        <div class="page-hdr"><h2>My Grades</h2><div class="breadcrumb">Student Portal › Grades</div></div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">📝 All Grade Records</span></div>
+          <div class="table-wrap"><table id="allMyGrades">
+            <thead><tr><th>Subject</th><th>Grade</th><th>Date</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+        <!-- Grade chart -->
+        <div class="card">
+          <div class="card-header"><span class="card-title">📊 Grade Overview</span></div>
+          <div id="gradeChart" style="display:flex;gap:.5rem;align-items:flex-end;height:140px;padding:.5rem 0;"></div>
+        </div>
+      </div>
+
+      <!-- ATTENDANCE -->
+      <div id="tab-attendance" class="hidden">
+        <div class="page-hdr"><h2>My Attendance</h2><div class="breadcrumb">Student Portal › Attendance</div></div>
+        <div class="stat-cards" id="attendStats"></div>
+        <div class="card">
+          <div class="table-wrap"><table id="allMyAttend">
+            <thead><tr><th>Date</th><th>Status</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div id="tab-payments" class="hidden">
+        <div class="page-hdr"><h2>My Payments</h2><div class="breadcrumb">Student Portal › Payments</div></div>
+        <div class="stat-cards" style="max-width:380px;">
+          <div class="stat-card success"><div class="sc-icon">💵</div><div class="sc-info"><h3 id="myTotalPaid">M 0.00</h3><p>Total Paid</p></div></div>
+        </div>
+        <div class="card">
+          <div class="table-wrap"><table id="myPaymentsTable">
+            <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Note</th></tr></thead>
+            <tbody></tbody>
+          </table></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+const session = Auth.requireRole('student');
+let myId = null;
+
+if(session){
+  myId = session.id;
+  document.getElementById('sbName').textContent    = session.name;
+  document.getElementById('topName').textContent   = session.name;
+  document.getElementById('topAvatar').textContent = initials(session.name);
+  document.getElementById('welcomeMsg').textContent = 'Welcome, ' + session.name + '! 👋';
+  renderOverview();
+}
+
+function showTab(name){
+  document.querySelectorAll('[id^="tab-"]').forEach(t=>t.classList.add('hidden'));
+  document.getElementById('tab-'+name).classList.remove('hidden');
+  document.querySelectorAll('.sb-nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  const titles={overview:'My Dashboard',grades:'My Grades',attendance:'My Attendance',payments:'My Payments'};
+  document.getElementById('pageTitle').textContent = titles[name]||name;
+  if(name==='grades')    renderGrades();
+  if(name==='attendance') renderAttendance();
+  if(name==='payments')  renderPayments();
+}
+
+function renderOverview(){
+  const grades=DB.grades().filter(g=>g.studentId===myId);
+  const att=DB.attendance().filter(a=>a.studentId===myId);
+  const pays=DB.payments().filter(p=>p.studentId===myId);
+  const present=att.filter(a=>a.status==='Present').length;
+  const absent=att.filter(a=>a.status==='Absent').length;
+
+  document.getElementById('myStats').innerHTML=`
+    <div class="stat-card"><div class="sc-icon">📝</div><div class="sc-info"><h3>${grades.length}</h3><p>Grade Records</p></div></div>
+    <div class="stat-card success"><div class="sc-icon">✅</div><div class="sc-info"><h3>${present}</h3><p>Days Present</p></div></div>
+    <div class="stat-card danger"><div class="sc-icon">❌</div><div class="sc-info"><h3>${absent}</h3><p>Days Absent</p></div></div>
+    <div class="stat-card gold"><div class="sc-icon">💵</div><div class="sc-info"><h3>M ${pays.reduce((s,p)=>s+p.amount,0).toFixed(2)}</h3><p>Total Paid</p></div></div>
+  `;
+
+  // Recent grades (last 4)
+  document.querySelector('#recentGradesTable tbody').innerHTML=[...grades].reverse().slice(0,4).map(g=>
+    `<tr><td>${g.subject}</td><td><span class="badge badge-navy">${g.grade}</span></td><td>${g.date}</td></tr>`
+  ).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--ink-soft);padding:1rem;">No grades yet</td></tr>';
+
+  // Recent attendance (last 5)
+  document.querySelector('#recentAttendTable tbody').innerHTML=[...att].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(a=>
+    `<tr><td>${a.date}</td><td><span class="badge ${a.status==='Present'?'badge-success':'badge-danger'}">${a.status}</span></td></tr>`
+  ).join('')||'<tr><td colspan="2" style="text-align:center;color:var(--ink-soft);padding:1rem;">No records</td></tr>';
+}
+
+function renderGrades(){
+  const grades=DB.grades().filter(g=>g.studentId===myId);
+  document.querySelector('#allMyGrades tbody').innerHTML=[...grades].reverse().map(g=>
+    `<tr><td>${g.subject}</td><td><span class="badge badge-navy" style="font-size:.9rem;">${g.grade}</span></td><td>${g.date}</td></tr>`
+  ).join('')||'<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--ink-soft);">No grades yet</td></tr>';
+
+  // Simple bar chart
+  const chart=document.getElementById('gradeChart');
+  const numericGrades=grades.filter(g=>!isNaN(parseInt(g.grade)));
+  const max=Math.max(...numericGrades.map(g=>parseInt(g.grade)),100);
+  chart.innerHTML=numericGrades.map(g=>{
+    const pct=Math.round((parseInt(g.grade)/max)*100);
+    const color=parseInt(g.grade)>=80?'var(--success)':parseInt(g.grade)>=60?'var(--gold)':'var(--danger)';
+    return `<div style="display:flex;flex-direction:column;align-items:center;flex:1;gap:.3rem;">
+      <span style="font-size:.72rem;font-weight:700;color:var(--navy);">${g.grade}</span>
+      <div style="width:100%;background:${color};border-radius:4px 4px 0 0;height:${pct}%;min-height:4px;"></div>
+      <span style="font-size:.65rem;color:var(--ink-soft);text-align:center;word-break:break-word;">${g.subject.slice(0,8)}</span>
+    </div>`;
+  }).join('')||'<p style="color:var(--ink-soft);font-size:.88rem;">No numeric grades to chart.</p>';
+}
+
+function renderAttendance(){
+  const att=DB.attendance().filter(a=>a.studentId===myId);
+  const present=att.filter(a=>a.status==='Present').length;
+  const absent=att.filter(a=>a.status==='Absent').length;
+  const rate=att.length?Math.round(present/att.length*100):0;
+  document.getElementById('attendStats').innerHTML=`
+    <div class="stat-card success"><div class="sc-icon">✅</div><div class="sc-info"><h3>${present}</h3><p>Days Present</p></div></div>
+    <div class="stat-card danger"><div class="sc-icon">❌</div><div class="sc-info"><h3>${absent}</h3><p>Days Absent</p></div></div>
+    <div class="stat-card gold"><div class="sc-icon">📊</div><div class="sc-info"><h3>${rate}%</h3><p>Attendance Rate</p></div></div>
+  `;
+  document.querySelector('#allMyAttend tbody').innerHTML=[...att].sort((a,b)=>b.date.localeCompare(a.date)).map(a=>
+    `<tr><td>${a.date}</td><td><span class="badge ${a.status==='Present'?'badge-success':'badge-danger'}">${a.status}</span></td></tr>`
+  ).join('')||'<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--ink-soft);">No records</td></tr>';
+}
+
+function renderPayments(){
+  const pays=DB.payments().filter(p=>p.studentId===myId);
+  document.getElementById('myTotalPaid').textContent='M '+pays.reduce((s,p)=>s+parseFloat(p.amount),0).toFixed(2);
+  document.querySelector('#myPaymentsTable tbody').innerHTML=[...pays].sort((a,b)=>b.date.localeCompare(a.date)).map(p=>
+    `<tr><td>${p.date}</td><td><strong>M ${parseFloat(p.amount).toFixed(2)}</strong></td><td><span class="badge badge-info">${p.method||'—'}</span></td><td>${p.note||'—'}</td></tr>`
+  ).join('')||'<tr><td colspan="4" style="text-align:center;padding:1.5rem;color:var(--ink-soft);">No payments</td></tr>';
+}
+</script>
+</body>
+</html>
